@@ -1,11 +1,10 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Paletização</title>
-   <!-- LINHA ADICIONADA: Ícone da aba (favicon) -->
-      <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧮</text></svg>">
+    <title>LogiCalc - Calculadora Rápida</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧮</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -16,32 +15,39 @@
             background-color: white;
             border-radius: 0.75rem;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease-in-out;
-        }
-        .result-card {
-            border: 1px solid #e5e7eb;
         }
         .result-value {
-            font-size: 2.25rem; /* 36px */
+            font-size: 2.25rem;
             font-weight: 700;
-            color: #1e40af; /* blue-800 */
+            color: #1e40af;
+        }
+        #history-list li {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+            transition: background-color 0.2s;
+        }
+        #history-list li:hover {
+            background-color: #f9fafb;
+        }
+        #history-list li:last-child {
+            border-bottom: none;
         }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
-    <div class="card w-full max-w-2xl p-6 md:p-8">
+    <div class="card w-full max-w-6xl p-6 md:p-8">
         
-        <!-- Cabeçalho -->
         <div class="text-center mb-8">
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Calculadora de Paletização</h1>
-            <p class="text-gray-500 mt-1">Selecione um produto e informe a quantidade de caixas.</p>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800">LogiCalc - Calculadora Rápida</h1>
+            <p class="text-gray-500 mt-1">Selecione, digite a quantidade e pressione Enter.</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
-            <!-- Painel de Entrada de Dados -->
-            <div class="space-y-6">
+            <!-- COLUNA ESQUERDA: CALCULADORA -->
+            <div class="lg:col-span-1 space-y-6">
+                <h2 class="text-xl font-bold text-gray-800 border-b pb-2">Calculadora</h2>
                 <div>
                     <label for="product-select" class="block text-sm font-medium text-gray-700 mb-1">1. Selecione o Produto</label>
                     <select id="product-select" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
@@ -58,194 +64,61 @@
                 </div>
 
                 <div>
-                    <label for="box-quantity" class="block text-sm font-medium text-gray-700 mb-1">2. Informe a Quantidade de Caixas</label>
+                    <label for="box-quantity" class="block text-sm font-medium text-gray-700 mb-1">2. Informe a Quantidade e Pressione Enter</label>
                     <input type="number" id="box-quantity" placeholder="Ex: 300" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" min="0">
                 </div>
-            </div>
 
-            <!-- Painel de Resultados -->
-            <div class="bg-blue-50 p-6 rounded-lg flex flex-col items-center justify-center text-center">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">Resultados</h2>
-                <div class="grid grid-cols-2 gap-4 w-full">
-                    <div class="result-card p-4 rounded-lg text-center">
-                        <p class="text-sm font-medium text-gray-600">Paletes Completos</p>
-                        <p id="result-pallets" class="result-value">0</p>
-                    </div>
-                    <div class="result-card p-4 rounded-lg text-center">
-                        <p class="text-sm font-medium text-gray-600">Caixas Restantes</p>
-                        <p id="result-fractions" class="result-value">0</p>
+                <div class="bg-blue-50 p-6 rounded-lg text-center">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">Resultado do Cálculo Atual</h2>
+                     <div class="grid grid-cols-2 gap-4 w-full">
+                        <div class="bg-white p-4 rounded-lg border">
+                            <p class="text-sm font-medium text-gray-600">Paletes</p>
+                            <p id="result-pallets" class="result-value">0</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border">
+                            <p class="text-sm font-medium text-gray-600">Caixas</p>
+                            <p id="result-fractions" class="result-value">0</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
+            <!-- COLUNA DIREITA: HISTÓRICO DE CÁLCULOS -->
+            <div class="lg:col-span-1">
+                <div class="flex justify-between items-center mb-2 border-b pb-2">
+                    <h2 class="text-xl font-bold text-gray-800">Histórico</h2>
+                    <button id="clear-history" class="text-sm text-red-500 hover:text-red-700 font-medium">Limpar</button>
+                </div>
+                <div class="bg-white rounded-lg border h-[30rem] overflow-y-auto">
+                    <ul id="history-list">
+                        <li id="history-placeholder" class="text-gray-400 text-center italic p-4">Nenhum cálculo salvo.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // --- BANCO DE DADOS DOS PRODUTOS (LISTA COMPLETA E ATUALIZADA) ---
+        // --- BANCO DE DADOS DOS PRODUTOS ---
         const products = [
-            { code: 103, name: 'SABÃO MARMORIZADO AZUL 9 KG', qtyPerPallet: 144 },
-            { code: 140, name: 'SABÃO RIO BAHIA AZUL 180', qtyPerPallet: 126 },
-            { code: 111, name: 'SABÃO RIO BAHIA NEUTRO 180', qtyPerPallet: 126 },
-            { code: 141, name: 'SABÃO RIO BAHIA LIMÃO 180', qtyPerPallet: 126 },
-            { code: 17237, name: 'SABÃO SUPER TEIÚ NEUTRO 450', qtyPerPallet: 126 },
-            { code: 17238, name: 'SABÃO SUPER TEIÚ LIMÃO 450', qtyPerPallet: 126 },
-            { code: 17239, name: 'SABÃO SUPER TEIÚ AZUL 180', qtyPerPallet: 126 },
-            { code: 17240, name: 'SABÃO SUPER TEIÚ LIMÃO 180', qtyPerPallet: 126 },
-            { code: 17241, name: 'SABÃO SUPER TEIÚ NEUTRO 180', qtyPerPallet: 126 },
-            { code: 17242, name: 'SABÃO SUPER TEIÚ NEUTRO INDIVIDUAL 180', qtyPerPallet: 126 },
-            { code: 17243, name: 'SABÃO SUPER TEIÚ AZUL FRESH INDIVIDUAL 180', qtyPerPallet: 126 },
-            { code: 17244, name: 'SABÃO SUPER TEIÚ LIMÃO FRESH INDIVIDUAL 180', qtyPerPallet: 126 },
-            { code: 17245, name: 'SABÃO SUPER TEIÚ AZUL INDIVIDUAL 180', qtyPerPallet: 126 },
-            { code: 17274, name: 'SABÃO ATILA NEUTRO 180', qtyPerPallet: 126 },
-            { code: 17285, name: 'SABÃO ATILA PERFUMADO GLIC. 180', qtyPerPallet: 126 },
-            { code: 17286, name: 'SABÃO ATILA LIMÃO GLIC. 180', qtyPerPallet: 126 },
-            { code: 300, name: 'SABÃO DE COCO 60 x 200', qtyPerPallet: 110 },
-            { code: 12695, name: 'SABÃO DE COCO 50 x 200', qtyPerPallet: 120 },
-            { code: 17277, name: 'SABONETE ERVA DOCE 80 GRAMAS', qtyPerPallet: 138 },
-            { code: 17278, name: 'SABONETE ALFAZEMA 80 GRAMAS', qtyPerPallet: 138 },
-            { code: 17279, name: 'SABONETE ROSAS 80 GRAMAS', qtyPerPallet: 138 },
-            { code: 17280, name: 'SABONETE AMÊNDOAS 80 GRAMAS', qtyPerPallet: 138 },
-            { code: 17281, name: 'SABONETE BEBÊ 80 GRAMAS', qtyPerPallet: 138 },
-            { code: 118, name: 'ÁGUA SANITÁRIA TEIÚ 1 LT', qtyPerPallet: 70 },
-            { code: 350, name: 'ÁGUA SANITÁRIA TEIÚ 2 LT', qtyPerPallet: 65 },
-            { code: 17196, name: 'ÁGUA SANITÁRIA TEIÚ 5 LT', qtyPerPallet: 40 },
-            { code: 17200, name: 'ÁGUA SANITÁRIA ATILA 1 LT', qtyPerPallet: 70 },
-            { code: 17206, name: 'ÁGUA SANITÁRIA EKOBOM 1 LT', qtyPerPallet: 70 },
-            { code: 17282, name: 'ÁGUA SANITÁRIA ATILA 2 LT', qtyPerPallet: 65 },
-            { code: 132, name: 'DESINFETANTE EUCALIPTO 1 LT', qtyPerPallet: 75 },
-            { code: 133, name: 'DESINFETANTE FLORAL 1 LT', qtyPerPallet: 75 },
-            { code: 134, name: 'DESINFETANTE LAVANDA 1 LT', qtyPerPallet: 75 },
-            { code: 136, name: 'DESINFETANTE MARINE 1 LT', qtyPerPallet: 75 },
-            { code: 137, name: 'DESINFETANTE CITRUS 1 LT', qtyPerPallet: 75 },
-            { code: 182, name: 'DESINFETANTE EUCALIPTO 2 LT', qtyPerPallet: 65 },
-            { code: 183, name: 'DESINFETANTE FLORAL 2 LT', qtyPerPallet: 65 },
-            { code: 184, name: 'DESINFETANTE LAVANDA 2 LT', qtyPerPallet: 65 },
-            { code: 187, name: 'DESINFETANTE MARINE 2 LT', qtyPerPallet: 65 },
-            { code: 188, name: 'DESINFETANTE CITRUS 2 LT', qtyPerPallet: 65 },
-            { code: 17195, name: 'DESINFETANTE EUCALIPTO 5 LT', qtyPerPallet: 40 },
-            { code: 17203, name: 'DESINFETANTE FLORAL 5 LT', qtyPerPallet: 40 },
-            { code: 17204, name: 'DESINFETANTE LAVANDA 5 LT', qtyPerPallet: 40 },
-            { code: 17232, name: 'DESINFETANTE BAC LAVANDA 500 ML', qtyPerPallet: 132 },
-            { code: 17233, name: 'DESINFETANTE BAC FLORAL 500 ML', qtyPerPallet: 132 },
-            { code: 17234, name: 'DESINFETANTE BAC EUCALIPTO 500 ML', qtyPerPallet: 132 },
-            { code: 17248, name: 'DESINFETANTE DIRECT GATILHO 500 ML', qtyPerPallet: 75 },
-            { code: 17247, name: 'DESINFETANTE DIRECT REFIL 500 ML', qtyPerPallet: 130 },
-            { code: 17254, name: 'DESINFETANTE BAC LAVANDA 2 LT', qtyPerPallet: 65 },
-            { code: 17255, name: 'DESINFETANTE BAC FLORAL 2 LT', qtyPerPallet: 65 },
-            { code: 17256, name: 'DESINFETANTE BAC EUCALIPTO 2 LT', qtyPerPallet: 65 },
-            { code: 17288, name: 'DESINFETANTE ATILA FLORAL 1 LT', qtyPerPallet: 70 },
-            { code: 17289, name: 'DESINFETANTE ATILA LAVANDA 1 LT', qtyPerPallet: 70 },
-            { code: 17290, name: 'DESINFETANTE ATILA HERBAL 1 LT', qtyPerPallet: 70 },
-            { code: 17291, name: 'DESINFETANTE ATILA TALCO 1 LT', qtyPerPallet: 70 },
-            { code: 17296, name: 'DESINFETANTE ATILA FLORAL 1 LT PROMOCIONAL', qtyPerPallet: 70 },
-            { code: 17297, name: 'DESINFETANTE ATILA LAVANDA 1 LT PROMOCIONAL', qtyPerPallet: 70 },
-            { code: 17298, name: 'DESINFETANTE ATILA HERBAL 1 LT PROMOCIONAL', qtyPerPallet: 70 },
-            { code: 17299, name: 'DESINFETANTE ATILA TALCO 1 LT PROMOCIONAL', qtyPerPallet: 70 },
-            { code: 17292, name: 'DESINFETANTE ATILA FLORAL 2 LT', qtyPerPallet: 65 },
-            { code: 17293, name: 'DESINFETANTE ATILA LAVANDA 2 LT', qtyPerPallet: 65 },
-            { code: 17294, name: 'DESINFETANTE ATILA HERBAL 2 LT', qtyPerPallet: 65 },
-            { code: 17295, name: 'DESINFETANTE ATILA TALCO 2 LT', qtyPerPallet: 65 },
-            { code: 330, name: 'GEL PINHO 1 KG', qtyPerPallet: 50 },
-            { code: 331, name: 'GEL PINHO 2 KG', qtyPerPallet: 56 },
-            { code: 17118, name: 'GEL PINHO 5 KG', qtyPerPallet: 48 },
-            { code: 17135, name: 'GEL LAVANDA 1 KG', qtyPerPallet: 72 },
-            { code: 17134, name: 'GEL LAVANDA 2 KG', qtyPerPallet: 70 },
-            { code: 17136, name: 'GEL CAPIM LIMÃO 1 KG', qtyPerPallet: 72 },
-            { code: 17137, name: 'GEL CAPIM LIMÃO 2 KG', qtyPerPallet: 70 },
-            { code: 17258, name: 'GEL POWER PINHO 1 KG', qtyPerPallet: 72 },
-            { code: 17259, name: 'GEL POWER PINHO 2 KG', qtyPerPallet: 70 },
-            { code: 17273, name: 'GEL PINHO ATILA 2 KG', qtyPerPallet: 56 },
-            { code: 117, name: 'ALVEJANTE LAVANDA 1 LT', qtyPerPallet: 70 },
-            { code: 11719, name: 'ALVEJANTE FLORAL 1 LT', qtyPerPallet: 70 },
-            { code: 14080, name: 'ALVEJANTE LAVANDA 2 LT', qtyPerPallet: 65 },
-            { code: 14081, name: 'ALVEJANTE FLORAL 2 LT', qtyPerPallet: 65 },
-            { code: 150, name: 'LAVA LOUÇAS TRADICIONAL 500 ML', qtyPerPallet: 84 },
-            { code: 151, name: 'LAVA LOUÇAS MAÇÃ 500 ML', qtyPerPallet: 84 },
-            { code: 152, name: 'LAVA LOUÇAS LIMÃO 500 ML', qtyPerPallet: 84 },
-            { code: 153, name: 'LAVA LOUÇAS CLEAR 500 ML', qtyPerPallet: 84 },
-            { code: 154, name: 'LAVA LOUÇAS COCO 500 ML', qtyPerPallet: 84 },
-            { code: 12729, name: 'LAVA LOUÇAS NEUTRO 2 LT', qtyPerPallet: 65 },
-            { code: 17197, name: 'LAVA LOUÇAS NEUTRO 5 LT', qtyPerPallet: 40 },
-            { code: 17269, name: 'LAVA LOUÇAS NEUTRO ATILA 500 ML', qtyPerPallet: 84 },
-            { code: 17270, name: 'LAVA LOUÇAS MAÇÃ ATILA 500 ML', qtyPerPallet: 84 },
-            { code: 17271, name: 'LAVA LOUÇAS LIMÃO ATILA 500 ML', qtyPerPallet: 84 },
-            { code: 17272, name: 'LAVA LOUÇAS COCO ATILA 500 ML', qtyPerPallet: 84 },
-            { code: 170, name: 'AMACIANTE AMARELO 1 LT', qtyPerPallet: 72 },
-            { code: 171, name: 'AMACIANTE AZUL 1 LT', qtyPerPallet: 72 },
-            { code: 178, name: 'AMACIANTE BRANCO 1 LT', qtyPerPallet: 72 },
-            { code: 180, name: 'AMACIANTE ROSAS 1 LT', qtyPerPallet: 72 },
-            { code: 173, name: 'AMACIANTE AMARELO 2 LT', qtyPerPallet: 70 },
-            { code: 174, name: 'AMACIANTE AZUL 2 LT', qtyPerPallet: 70 },
-            { code: 177, name: 'AMACIANTE BRANCO 2 LT', qtyPerPallet: 70 },
-            { code: 179, name: 'AMACIANTE ROSAS 2 LT', qtyPerPallet: 70 },
-            { code: 11713, name: 'AMACIANTE AZUL 5 LT', qtyPerPallet: 70 },
-            { code: 17283, name: 'AMACIANTE ATILA 1 LT', qtyPerPallet: 50 },
-            { code: 17284, name: 'AMACIANTE ATILA 2 LT', qtyPerPallet: 65 },
-            { code: 17287, name: 'LAVA ROUPAS 1 LT', qtyPerPallet: 72 },
-            { code: 17219, name: 'LAVA ROUPAS PERFUMES 1 LT', qtyPerPallet: 72 },
-            { code: 17190, name: 'LAVA ROUPAS COCO 500 ML', qtyPerPallet: 120 },
-            { code: 17201, name: 'LAVA ROUPAS 3 LT', qtyPerPallet: 64 },
-            { code: 17220, name: 'LAVA ROUPAS PERFUMES 3LT', qtyPerPallet: 64 },
-            { code: 17222, name: 'LAVA ROUPAS 3 EM 1 3 LT', qtyPerPallet: 64 },
-            { code: 17229, name: 'LAVA ROUPAS DOCE 3 LT', qtyPerPallet: 64 },
-            { code: 17202, name: 'LAVA ROUPAS 5 LT', qtyPerPallet: 72 },
-            { code: 17221, name: 'LAVA ROUPAS PERFUMES 5 LT', qtyPerPallet: 72 },
-            { code: 17153, name: 'MULTIUSO TRADICIONAL 500 ML', qtyPerPallet: 108 },
-            { code: 17154, name: 'MULTIUSO CAMPESTRE 500 ML', qtyPerPallet: 108 },
-            { code: 17155, name: 'MULTIUSO KIT 500 ML', qtyPerPallet: 108 },
-            { code: 17208, name: 'MULTIUSO EKOBOM TRADICIONAL 500 ML', qtyPerPallet: 108 },
-            { code: 17209, name: 'MULTIUSO EKOBOM CAMPESTRE 500 ML', qtyPerPallet: 108 },
-            { code: 17249, name: 'MULTIUSO VATZ ORIGINAL 12X500 ML', qtyPerPallet: 108 },
-            { code: 17250, name: 'MULTIUSO VATZ CAMPESTRE 12X500 ML', qtyPerPallet: 108 },
-            { code: 17252, name: 'MULTIUSO VATZ LAVANDA 12X500 ML', qtyPerPallet: 108 },
-            { code: 17264, name: 'MULTIUSO VATZ ESPUMA GATILHO 12X500 ML', qtyPerPallet: 70 },
-            { code: 17265, name: 'MULTIUSO VATZ ESPUMA REFIL 12X500 ML', qtyPerPallet: 84 },
-            { code: 17266, name: 'TIRA LIMO VATZ CLORO ATIVO SQUEEZE 12X500 ML', qtyPerPallet: 108 },
-            { code: 17267, name: 'TIRA LIMO VATZ CLORO ATIVO GATILHO 12X500 ML', qtyPerPallet: 70 },
-            { code: 17268, name: 'TIRA LIMO VATZ CLORO ATIVO REFIL 12X500 ML', qtyPerPallet: 84 },
-            { code: 202, name: 'VELA 03', qtyPerPallet: 240 },
-            { code: 203, name: 'VELA 04', qtyPerPallet: 240 },
-            { code: 204, name: 'VELA 05', qtyPerPallet: 189 },
-            { code: 205, name: 'VELA 06', qtyPerPallet: 189 },
-            { code: 209, name: 'VELA VOTIVA 50', qtyPerPallet: 222 },
-            { code: 234, name: 'VELA 08', qtyPerPallet: 120 },
-            { code: 236, name: 'VELA VOTIVA 60', qtyPerPallet: 192 },
-            { code: 17150, name: 'VELA DE CITRONELA', qtyPerPallet: 295 },
-            { code: 160, name: 'ESPONJA SINTÉTICA 1 X 60', qtyPerPallet: 117 },
-            { code: 14396, name: 'ESPONJA SUPER ANTIADERENTE 60 X 1', qtyPerPallet: 117 },
-            { code: 13267, name: 'ESPONJA SINTÉTICA 20 X 3', qtyPerPallet: 117 },
-            { code: 17188, name: 'LIMPA VIDROS 500 ML', qtyPerPallet: 108 },
-            { code: 17207, name: 'LIMPA VIDROS EKOBOM 500 ML', qtyPerPallet: 108 },
-            { code: 17262, name: 'LIMPA VIDROS VATZ GATILHO 12X500 ML', qtyPerPallet: 70 },
-            { code: 17263, name: 'LIMPA VIDROS VATZ REFIL 12X500 ML', qtyPerPallet: 84 },
-            { code: 17189, name: 'SABONETE LÍQUIDO ERVA DOCE 2 LT', qtyPerPallet: 65 },
-            { code: 17170, name: 'SABONETE LÍQUIDO LAVANDA 2 LT', qtyPerPallet: 65 },
-            { code: 17230, name: 'SABONETE LÍQUIDO ERVA DOCE 5 LT', qtyPerPallet: 40 },
-            { code: 17231, name: 'SABONETE LÍQUIDO LAVANDA 5 LT', qtyPerPallet: 40 },
-            { code: 17236, name: 'ÁLCOOL GEL ACENDEDOR BRASA GEL 80%', qtyPerPallet: 144 },
-            { code: 17251, name: 'LIMPADOR VATZ SQUEEZE 12X500 ML', qtyPerPallet: 108 },
-            { code: 17260, name: 'LIMPADOR VATZ GATILHO 12X500 ML', qtyPerPallet: 70 },
-            { code: 17261, name: 'LIMPADOR VATZ REFIL 12X500 ML', qtyPerPallet: 84 }
+            { code: 103, name: 'SABÃO MARMORIZADO AZUL 9 KG', qtyPerPallet: 144 }, { code: 140, name: 'SABÃO RIO BAHIA AZUL 180', qtyPerPallet: 126 }, { code: 111, name: 'SABÃO RIO BAHIA NEUTRO 180', qtyPerPallet: 126 }, { code: 141, name: 'SABÃO RIO BAHIA LIMÃO 180', qtyPerPallet: 126 }, { code: 17237, name: 'SABÃO SUPER TEIÚ NEUTRO 450', qtyPerPallet: 126 }, { code: 17238, name: 'SABÃO SUPER TEIÚ LIMÃO 450', qtyPerPallet: 126 }, { code: 17239, name: 'SABÃO SUPER TEIÚ AZUL 180', qtyPerPallet: 126 }, { code: 17240, name: 'SABÃO SUPER TEIÚ LIMÃO 180', qtyPerPallet: 126 }, { code: 17241, name: 'SABÃO SUPER TEIÚ NEUTRO 180', qtyPerPallet: 126 }, { code: 17242, name: 'SABÃO SUPER TEIÚ NEUTRO INDIVIDUAL 180', qtyPerPallet: 126 }, { code: 17243, name: 'SABÃO SUPER TEIÚ AZUL FRESH INDIVIDUAL 180', qtyPerPallet: 126 }, { code: 17244, name: 'SABÃO SUPER TEIÚ LIMÃO FRESH INDIVIDUAL 180', qtyPerPallet: 126 }, { code: 17245, name: 'SABÃO SUPER TEIÚ AZUL INDIVIDUAL 180', qtyPerPallet: 126 }, { code: 17274, name: 'SABÃO ATILA NEUTRO 180', qtyPerPallet: 126 }, { code: 17285, name: 'SABÃO ATILA PERFUMADO GLIC. 180', qtyPerPallet: 126 }, { code: 17286, name: 'SABÃO ATILA LIMÃO GLIC. 180', qtyPerPallet: 126 }, { code: 300, name: 'SABÃO DE COCO 60 x 200', qtyPerPallet: 110 }, { code: 12695, name: 'SABÃO DE COCO 50 x 200', qtyPerPallet: 120 }, { code: 17277, name: 'SABONETE ERVA DOCE 80 GRAMAS', qtyPerPallet: 138 }, { code: 17278, name: 'SABONETE ALFAZEMA 80 GRAMAS', qtyPerPallet: 138 }, { code: 17279, name: 'SABONETE ROSAS 80 GRAMAS', qtyPerPallet: 138 }, { code: 17280, name: 'SABONETE AMÊNDOAS 80 GRAMAS', qtyPerPallet: 138 }, { code: 17281, name: 'SABONETE BEBÊ 80 GRAMAS', qtyPerPallet: 138 }, { code: 118, name: 'ÁGUA SANITÁRIA TEIÚ 1 LT', qtyPerPallet: 70 }, { code: 350, name: 'ÁGUA SANITÁRIA TEIÚ 2 LT', qtyPerPallet: 65 }, { code: 17196, name: 'ÁGUA SANITÁRIA TEIÚ 5 LT', qtyPerPallet: 40 }, { code: 17200, name: 'ÁGUA SANITÁRIA ATILA 1 LT', qtyPerPallet: 70 }, { code: 17206, name: 'ÁGUA SANITÁRIA EKOBOM 1 LT', qtyPerPallet: 70 }, { code: 17282, name: 'ÁGUA SANITÁRIA ATILA 2 LT', qtyPerPallet: 65 }, { code: 132, name: 'DESINFETANTE EUCALIPTO 1 LT', qtyPerPallet: 75 }, { code: 133, name: 'DESINFETANTE FLORAL 1 LT', qtyPerPallet: 75 }, { code: 134, name: 'DESINFETANTE LAVANDA 1 LT', qtyPerPallet: 75 }, { code: 136, name: 'DESINFETANTE MARINE 1 LT', qtyPerPallet: 75 }, { code: 137, name: 'DESINFETANTE CITRUS 1 LT', qtyPerPallet: 75 }, { code: 182, name: 'DESINFETANTE EUCALIPTO 2 LT', qtyPerPallet: 65 }, { code: 183, name: 'DESINFETANTE FLORAL 2 LT', qtyPerPallet: 65 }, { code: 184, name: 'DESINFETANTE LAVANDA 2 LT', qtyPerPallet: 65 }, { code: 187, name: 'DESINFETANTE MARINE 2 LT', qtyPerPallet: 65 }, { code: 188, name: 'DESINFETANTE CITRUS 2 LT', qtyPerPallet: 65 }, { code: 17195, name: 'DESINFETANTE EUCALIPTO 5 LT', qtyPerPallet: 40 }, { code: 17203, name: 'DESINFETANTE FLORAL 5 LT', qtyPerPallet: 40 }, { code: 17204, name: 'DESINFETANTE LAVANDA 5 LT', qtyPerPallet: 40 }, { code: 17232, name: 'DESINFETANTE BAC LAVANDA 500 ML', qtyPerPallet: 132 }, { code: 17233, name: 'DESINFETANTE BAC FLORAL 500 ML', qtyPerPallet: 132 }, { code: 17234, name: 'DESINFETANTE BAC EUCALIPTO 500 ML', qtyPerPallet: 132 }, { code: 17248, name: 'DESINFETANTE DIRECT GATILHO 500 ML', qtyPerPallet: 75 }, { code: 17247, name: 'DESINFETANTE DIRECT REFIL 500 ML', qtyPerPallet: 130 }, { code: 17254, name: 'DESINFETANTE BAC LAVANDA 2 LT', qtyPerPallet: 65 }, { code: 17255, name: 'DESINFETANTE BAC FLORAL 2 LT', qtyPerPallet: 65 }, { code: 17256, name: 'DESINFETANTE BAC EUCALIPTO 2 LT', qtyPerPallet: 65 }, { code: 17288, name: 'DESINFETANTE ATILA FLORAL 1 LT', qtyPerPallet: 70 }, { code: 17289, name: 'DESINFETANTE ATILA LAVANDA 1 LT', qtyPerPallet: 70 }, { code: 17290, name: 'DESINFETANTE ATILA HERBAL 1 LT', qtyPerPallet: 70 }, { code: 17291, name: 'DESINFETANTE ATILA TALCO 1 LT', qtyPerPallet: 70 }, { code: 17296, name: 'DESINFETANTE ATILA FLORAL 1 LT PROMOCIONAL', qtyPerPallet: 70 }, { code: 17297, name: 'DESINFETANTE ATILA LAVANDA 1 LT PROMOCIONAL', qtyPerPallet: 70 }, { code: 17298, name: 'DESINFETANTE ATILA HERBAL 1 LT PROMOCIONAL', qtyPerPallet: 70 }, { code: 17299, name: 'DESINFETANTE ATILA TALCO 1 LT PROMOCIONAL', qtyPerPallet: 70 }, { code: 17292, name: 'DESINFETANTE ATILA FLORAL 2 LT', qtyPerPallet: 65 }, { code: 17293, name: 'DESINFETANTE ATILA LAVANDA 2 LT', qtyPerPallet: 65 }, { code: 17294, name: 'DESINFETANTE ATILA HERBAL 2 LT', qtyPerPallet: 65 }, { code: 17295, name: 'DESINFETANTE ATILA TALCO 2 LT', qtyPerPallet: 65 }, { code: 330, name: 'GEL PINHO 1 KG', qtyPerPallet: 50 }, { code: 331, name: 'GEL PINHO 2 KG', qtyPerPallet: 56 }, { code: 17118, name: 'GEL PINHO 5 KG', qtyPerPallet: 48 }, { code: 17135, name: 'GEL LAVANDA 1 KG', qtyPerPallet: 72 }, { code: 17134, name: 'GEL LAVANDA 2 KG', qtyPerPallet: 70 }, { code: 17136, name: 'GEL CAPIM LIMÃO 1 KG', qtyPerPallet: 72 }, { code: 17137, name: 'GEL CAPIM LIMÃO 2 KG', qtyPerPallet: 70 }, { code: 17258, name: 'GEL POWER PINHO 1 KG', qtyPerPallet: 72 }, { code: 17259, name: 'GEL POWER PINHO 2 KG', qtyPerPallet: 70 }, { code: 17273, name: 'GEL PINHO ATILA 2 KG', qtyPerPallet: 56 }, { code: 117, name: 'ALVEJANTE LAVANDA 1 LT', qtyPerPallet: 70 }, { code: 11719, name: 'ALVEJANTE FLORAL 1 LT', qtyPerPallet: 70 }, { code: 14080, name: 'ALVEJANTE LAVANDA 2 LT', qtyPerPallet: 65 }, { code: 14081, name: 'ALVEJANTE FLORAL 2 LT', qtyPerPallet: 65 }, { code: 150, name: 'LAVA LOUÇAS TRADICIONAL 500 ML', qtyPerPallet: 84 }, { code: 151, name: 'LAVA LOUÇAS MAÇÃ 500 ML', qtyPerPallet: 84 }, { code: 152, name: 'LAVA LOUÇAS LIMÃO 500 ML', qtyPerPallet: 84 }, { code: 153, name: 'LAVA LOUÇAS CLEAR 500 ML', qtyPerPallet: 84 }, { code: 154, name: 'LAVA LOUÇAS COCO 500 ML', qtyPerPallet: 84 }, { code: 12729, name: 'LAVA LOUÇAS NEUTRO 2 LT', qtyPerPallet: 65 }, { code: 17197, name: 'LAVA LOUÇAS NEUTRO 5 LT', qtyPerPallet: 40 }, { code: 17269, name: 'LAVA LOUÇAS NEUTRO ATILA 500 ML', qtyPerPallet: 84 }, { code: 17270, name: 'LAVA LOUÇAS MAÇÃ ATILA 500 ML', qtyPerPallet: 84 }, { code: 17271, name: 'LAVA LOUÇAS LIMÃO ATILA 500 ML', qtyPerPallet: 84 }, { code: 17272, name: 'LAVA LOUÇAS COCO ATILA 500 ML', qtyPerPallet: 84 }, { code: 170, name: 'AMACIANTE AMARELO 1 LT', qtyPerPallet: 72 }, { code: 171, name: 'AMACIANTE AZUL 1 LT', qtyPerPallet: 72 }, { code: 178, name: 'AMACIANTE BRANCO 1 LT', qtyPerPallet: 72 }, { code: 180, name: 'AMACIANTE ROSAS 1 LT', qtyPerPallet: 72 }, { code: 173, name: 'AMACIANTE AMARELO 2 LT', qtyPerPallet: 70 }, { code: 174, name: 'AMACIANTE AZUL 2 LT', qtyPerPallet: 70 }, { code: 177, name: 'AMACIANTE BRANCO 2 LT', qtyPerPallet: 70 }, { code: 179, name: 'AMACIANTE ROSAS 2 LT', qtyPerPallet: 70 }, { code: 11713, name: 'AMACIANTE AZUL 5 LT', qtyPerPallet: 70 }, { code: 17283, name: 'AMACIANTE ATILA 1 LT', qtyPerPallet: 50 }, { code: 17284, name: 'AMACIANTE ATILA 2 LT', qtyPerPallet: 65 }, { code: 17287, name: 'LAVA ROUPAS 1 LT', qtyPerPallet: 72 }, { code: 17219, name: 'LAVA ROUPAS PERFUMES 1 LT', qtyPerPallet: 72 }, { code: 17190, name: 'LAVA ROUPAS COCO 500 ML', qtyPerPallet: 120 }, { code: 17201, name: 'LAVA ROUPAS 3 LT', qtyPerPallet: 64 }, { code: 17220, name: 'LAVA ROUPAS PERFUMES 3LT', qtyPerPallet: 64 }, { code: 17222, name: 'LAVA ROUPAS 3 EM 1 3 LT', qtyPerPallet: 64 }, { code: 17229, name: 'LAVA ROUPAS DOCE 3 LT', qtyPerPallet: 64 }, { code: 17202, name: 'LAVA ROUPAS 5 LT', qtyPerPallet: 72 }, { code: 17221, name: 'LAVA ROUPAS PERFUMES 5 LT', qtyPerPallet: 72 }, { code: 17153, name: 'MULTIUSO TRADICIONAL 500 ML', qtyPerPallet: 108 }, { code: 17154, name: 'MULTIUSO CAMPESTRE 500 ML', qtyPerPallet: 108 }, { code: 17155, name: 'MULTIUSO KIT 500 ML', qtyPerPallet: 108 }, { code: 17208, name: 'MULTIUSO EKOBOM TRADICIONAL 500 ML', qtyPerPallet: 108 }, { code: 17209, name: 'MULTIUSO EKOBOM CAMPESTRE 500 ML', qtyPerPallet: 108 }, { code: 17249, name: 'MULTIUSO VATZ ORIGINAL 12X500 ML', qtyPerPallet: 108 }, { code: 17250, name: 'MULTIUSO VATZ CAMPESTRE 12X500 ML', qtyPerPallet: 108 }, { code: 17252, name: 'MULTIUSO VATZ LAVANDA 12X500 ML', qtyPerPallet: 108 }, { code: 17264, name: 'MULTIUSO VATZ ESPUMA GATILHO 12X500 ML', qtyPerPallet: 70 }, { code: 17265, name: 'MULTIUSO VATZ ESPUMA REFIL 12X500 ML', qtyPerPallet: 84 }, { code: 17266, name: 'TIRA LIMO VATZ CLORO ATIVO SQUEEZE 12X500 ML', qtyPerPallet: 108 }, { code: 17267, name: 'TIRA LIMO VATZ CLORO ATIVO GATILHO 12X500 ML', qtyPerPallet: 70 }, { code: 17268, name: 'TIRA LIMO VATZ CLORO ATIVO REFIL 12X500 ML', qtyPerPallet: 84 }, { code: 202, name: 'VELA 03', qtyPerPallet: 240 }, { code: 203, name: 'VELA 04', qtyPerPallet: 240 }, { code: 204, name: 'VELA 05', qtyPerPallet: 189 }, { code: 205, name: 'VELA 06', qtyPerPallet: 189 }, { code: 209, name: 'VELA VOTIVA 50', qtyPerPallet: 222 }, { code: 234, name: 'VELA 08', qtyPerPallet: 120 }, { code: 236, name: 'VELA VOTIVA 60', qtyPerPallet: 192 }, { code: 17150, name: 'VELA DE CITRONELA', qtyPerPallet: 295 }, { code: 160, name: 'ESPONJA SINTÉTICA 1 X 60', qtyPerPallet: 117 }, { code: 14396, name: 'ESPONJA SUPER ANTIADERENTE 60 X 1', qtyPerPallet: 117 }, { code: 13267, name: 'ESPONJA SINTÉTICA 20 X 3', qtyPerPallet: 117 }, { code: 17188, name: 'LIMPA VIDROS 500 ML', qtyPerPallet: 108 }, { code: 17207, name: 'LIMPA VIDROS EKOBOM 500 ML', qtyPerPallet: 108 }, { code: 17262, name: 'LIMPA VIDROS VATZ GATILHO 12X500 ML', qtyPerPallet: 70 }, { code: 17263, name: 'LIMPA VIDROS VATZ REFIL 12X500 ML', qtyPerPallet: 84 }, { code: 17189, name: 'SABONETE LÍQUIDO ERVA DOCE 2 LT', qtyPerPallet: 65 }, { code: 17170, name: 'SABONETE LÍQUIDO LAVANDA 2 LT', qtyPerPallet: 65 }, { code: 17230, name: 'SABONETE LÍQUIDO ERVA DOCE 5 LT', qtyPerPallet: 40 }, { code: 17231, name: 'SABONETE LÍQUIDO LAVANDA 5 LT', qtyPerPallet: 40 }, { code: 17236, name: 'ÁLCOOL GEL ACENDEDOR BRASA GEL 80%', qtyPerPallet: 144 }, { code: 17251, name: 'LIMPADOR VATZ SQUEEZE 12X500 ML', qtyPerPallet: 108 }, { code: 17260, name: 'LIMPADOR VATZ GATILHO 12X500 ML', qtyPerPallet: 70 }, { code: 17261, name: 'LIMPADOR VATZ REFIL 12X500 ML', qtyPerPallet: 84 }
         ];
 
         // --- ELEMENTOS DO HTML ---
         const productSelect = document.getElementById('product-select');
         const boxQuantityInput = document.getElementById('box-quantity');
-        
         const productCodeDisplay = document.getElementById('product-code');
         const productQtyDisplay = document.getElementById('product-qty');
-        
         const resultPalletsDisplay = document.getElementById('result-pallets');
         const resultFractionsDisplay = document.getElementById('result-fractions');
+        const historyList = document.getElementById('history-list');
+        const clearHistoryBtn = document.getElementById('clear-history');
+        const historyPlaceholder = document.getElementById('history-placeholder');
 
         // --- FUNÇÕES ---
 
-        // Função para popular o seletor de produtos
         function populateProducts() {
-            // Organiza os produtos em ordem alfabética pelo nome
             products.sort((a, b) => a.name.localeCompare(b.name));
-
             products.forEach(product => {
                 const option = document.createElement('option');
                 option.value = product.code;
@@ -254,15 +127,12 @@
             });
         }
 
-        // Função principal para calcular e atualizar os resultados
-        function calculateAndDisplay() {
+        function updateCalculationDisplay() {
             const selectedCode = parseInt(productSelect.value);
             const totalBoxes = parseInt(boxQuantityInput.value) || 0;
-
             const selectedProduct = products.find(p => p.code === selectedCode);
 
             if (!selectedProduct) {
-                // Se nenhum produto for selecionado, reseta os resultados
                 productCodeDisplay.textContent = '-';
                 productQtyDisplay.textContent = '-';
                 resultPalletsDisplay.textContent = '0';
@@ -270,7 +140,6 @@
                 return;
             }
 
-            // Atualiza os detalhes do produto selecionado
             productCodeDisplay.textContent = selectedProduct.code;
             productQtyDisplay.textContent = selectedProduct.qtyPerPallet;
             
@@ -278,27 +147,81 @@
                 const qtyPerPallet = selectedProduct.qtyPerPallet;
                 const pallets = Math.floor(totalBoxes / qtyPerPallet);
                 const fractions = totalBoxes % qtyPerPallet;
-
-                // Atualiza os displays de resultado
                 resultPalletsDisplay.textContent = pallets;
                 resultFractionsDisplay.textContent = fractions;
             } else {
-                // Se a quantidade de caixas for 0 ou inválida, reseta os resultados
                 resultPalletsDisplay.textContent = '0';
                 resultFractionsDisplay.textContent = '0';
             }
         }
 
+        function processAndReset() {
+            const selectedCode = parseInt(productSelect.value);
+            const totalBoxes = parseInt(boxQuantityInput.value) || 0;
+            
+            if (!selectedCode || totalBoxes <= 0) {
+                return; 
+            }
+
+            const selectedProduct = products.find(p => p.code === selectedCode);
+            const pallets = Math.floor(totalBoxes / selectedProduct.qtyPerPallet);
+            const fractions = totalBoxes % selectedProduct.qtyPerPallet;
+
+            if (historyPlaceholder) {
+                historyPlaceholder.style.display = 'none';
+            }
+
+            const listItem = document.createElement('li');
+            listItem.className = 'text-sm';
+            listItem.innerHTML = `
+                <p class="font-semibold text-gray-800">${selectedProduct.name}</p>
+                <p class="text-gray-600">
+                    <span class="font-bold">${totalBoxes}</span> caixas = 
+                    <span class="font-bold text-blue-700">${pallets}</span> paletes e 
+                    <span class="font-bold text-blue-700">${fractions}</span> caixas
+                </p>
+            `;
+            
+            historyList.prepend(listItem);
+
+            // Resetar campos
+            productSelect.value = '';
+            boxQuantityInput.value = '';
+            
+            // Atualizar display para zerar
+            updateCalculationDisplay();
+
+            // Focar no seletor de produto para o próximo cálculo
+            productSelect.focus();
+        }
+
+        function clearHistory() {
+            historyList.innerHTML = '';
+            const placeholder = document.createElement('li');
+            placeholder.id = 'history-placeholder';
+            placeholder.className = 'text-gray-400 text-center italic p-4';
+            placeholder.textContent = 'Nenhum cálculo salvo.';
+            historyList.appendChild(placeholder);
+        }
+
         // --- EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            populateProducts();
+            productSelect.focus(); // Foco inicial no seletor
+        });
 
-        // Roda quando a página carrega
-        document.addEventListener('DOMContentLoaded', populateProducts);
+        productSelect.addEventListener('change', updateCalculationDisplay);
+        boxQuantityInput.addEventListener('input', updateCalculationDisplay);
+        
+        // Listener para a tecla "Enter" no campo de quantidade
+        boxQuantityInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Impede o comportamento padrão do Enter
+                processAndReset();
+            }
+        });
 
-        // Roda quando o usuário seleciona um produto diferente
-        productSelect.addEventListener('change', calculateAndDisplay);
-
-        // Roda sempre que o usuário digita no campo de quantidade
-        boxQuantityInput.addEventListener('input', calculateAndDisplay);
+        clearHistoryBtn.addEventListener('click', clearHistory);
 
     </script>
 
