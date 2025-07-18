@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LogiCalc - Calculadora Rápida</title>
+    <title>LogiCalc - Calculadora com Análise IA</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧮</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -32,6 +32,19 @@
         #history-list li:last-child {
             border-bottom: none;
         }
+        /* Estilo para o spinner de carregamento */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
@@ -39,8 +52,8 @@
     <div class="card w-full max-w-6xl p-6 md:p-8">
         
         <div class="text-center mb-8">
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-800">LogiCalc - Calculadora Rápida</h1>
-            <p class="text-gray-500 mt-1">Selecione, digite a quantidade e pressione Enter.</p>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800">LogiCalc - Calculadora com Análise IA</h1>
+            <p class="text-gray-500 mt-1">Calcule, adicione ao histórico e otimize sua carga com a IA da Gemini.</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -54,7 +67,6 @@
                         <option value="">-- Escolha um produto --</option>
                     </select>
                 </div>
-
                 <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <h3 class="font-semibold text-gray-700 mb-2">Detalhes do Produto</h3>
                     <div class="space-y-1 text-sm">
@@ -62,12 +74,10 @@
                         <p><strong>Caixas por Palete:</strong> <span id="product-qty" class="font-bold text-blue-700">-</span></p>
                     </div>
                 </div>
-
                 <div>
                     <label for="box-quantity" class="block text-sm font-medium text-gray-700 mb-1">2. Informe a Quantidade e Pressione Enter</label>
                     <input type="number" id="box-quantity" placeholder="Ex: 300" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" min="0">
                 </div>
-
                 <div class="bg-blue-50 p-6 rounded-lg text-center">
                     <h2 class="text-lg font-bold text-gray-800 mb-4">Resultado do Cálculo Atual</h2>
                      <div class="grid grid-cols-2 gap-4 w-full">
@@ -83,16 +93,30 @@
                 </div>
             </div>
 
-            <!-- COLUNA DIREITA: HISTÓRICO DE CÁLCULOS -->
-            <div class="lg:col-span-1">
+            <!-- COLUNA DIREITA: HISTÓRICO E ANÁLISE IA -->
+            <div class="lg:col-span-1 flex flex-col">
                 <div class="flex justify-between items-center mb-2 border-b pb-2">
                     <h2 class="text-xl font-bold text-gray-800">Histórico</h2>
                     <button id="clear-history" class="text-sm text-red-500 hover:text-red-700 font-medium">Limpar</button>
                 </div>
-                <div class="bg-white rounded-lg border h-[30rem] overflow-y-auto">
+                <div class="bg-white rounded-lg border h-80 overflow-y-auto mb-4">
                     <ul id="history-list">
                         <li id="history-placeholder" class="text-gray-400 text-center italic p-4">Nenhum cálculo salvo.</li>
                     </ul>
+                </div>
+                
+                <!-- NOVA SEÇÃO DE ANÁLISE IA -->
+                <div class="flex-grow flex flex-col">
+                     <button id="analyze-load-btn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-semibold py-3 rounded-lg hover:from-blue-700 hover:to-indigo-800 transition-all shadow-md flex items-center justify-center gap-2">
+                        ✨ Analisar Carga com IA
+                     </button>
+                     <div id="analysis-container" class="mt-4 p-4 bg-gray-50 rounded-lg border h-64 overflow-y-auto hidden">
+                        <div id="analysis-loading" class="flex flex-col items-center justify-center h-full">
+                            <div class="loader"></div>
+                            <p class="mt-2 text-sm text-gray-500">Analisando... Por favor, aguarde.</p>
+                        </div>
+                        <div id="analysis-result" class="text-sm text-gray-700 prose"></div>
+                     </div>
                 </div>
             </div>
         </div>
@@ -114,6 +138,14 @@
         const historyList = document.getElementById('history-list');
         const clearHistoryBtn = document.getElementById('clear-history');
         const historyPlaceholder = document.getElementById('history-placeholder');
+        
+        // --- NOVOS ELEMENTOS IA ---
+        const analyzeLoadBtn = document.getElementById('analyze-load-btn');
+        const analysisContainer = document.getElementById('analysis-container');
+        const analysisLoading = document.getElementById('analysis-loading');
+        const analysisResult = document.getElementById('analysis-result');
+        
+        let historyData = []; // Array para armazenar os dados do histórico
 
         // --- FUNÇÕES ---
 
@@ -170,6 +202,14 @@
             if (historyPlaceholder) {
                 historyPlaceholder.style.display = 'none';
             }
+            
+            // Adiciona dados ao array do histórico
+            historyData.push({
+                name: selectedProduct.name,
+                totalBoxes: totalBoxes,
+                pallets: pallets,
+                fractions: fractions
+            });
 
             const listItem = document.createElement('li');
             listItem.className = 'text-sm';
@@ -184,44 +224,118 @@
             
             historyList.prepend(listItem);
 
-            // Resetar campos
             productSelect.value = '';
             boxQuantityInput.value = '';
-            
-            // Atualizar display para zerar
             updateCalculationDisplay();
-
-            // Focar no seletor de produto para o próximo cálculo
             productSelect.focus();
         }
 
         function clearHistory() {
             historyList.innerHTML = '';
+            historyData = []; // Limpa o array de dados
+            analysisContainer.classList.add('hidden'); // Esconde a análise
             const placeholder = document.createElement('li');
             placeholder.id = 'history-placeholder';
             placeholder.className = 'text-gray-400 text-center italic p-4';
             placeholder.textContent = 'Nenhum cálculo salvo.';
             historyList.appendChild(placeholder);
         }
+        
+        // --- FUNÇÃO PARA CHAMAR A API GEMINI ---
+        async function analyzeLoadWithGemini() {
+            if (historyData.length === 0) {
+                alert("Adicione pelo menos um cálculo ao histórico antes de analisar.");
+                return;
+            }
+
+            // Mostra o container de análise com o spinner
+            analysisContainer.classList.remove('hidden');
+            analysisLoading.style.display = 'flex';
+            analysisResult.style.display = 'none';
+
+            // Monta o prompt para a IA
+            const loadList = historyData.map(item => `- ${item.name}: ${item.totalBoxes} caixas (resultando em ${item.pallets} paletes e ${item.fractions} caixas avulsas)`).join('\n');
+            const prompt = `
+                Você é um assistente de logística especialista em carregamento de caminhões.
+                Analise a seguinte lista de produtos e forneça um relatório claro e útil.
+
+                Lista de Carga:
+                ${loadList}
+
+                Por favor, gere um relatório com duas seções, usando Markdown para formatação:
+
+                ### 1. Resumo da Carga
+                Forneça um resumo conciso do carregamento total.
+
+                ### 2. Plano de Carregamento Sugerido
+                Sugira a melhor forma de organizar esta carga em um caminhão padrão. Considere a segurança (não colocar itens pesados sobre leves), a estabilidade (distribuição de peso) e a otimização do espaço. Dê instruções claras.
+            `;
+
+            const apiKey = ""; // Deixe em branco, será tratado pelo ambiente
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            
+            const payload = {
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }]
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro na API: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    // Simples conversão de Markdown para HTML
+                    let htmlResult = text
+                        .replace(/### (.*)/g, '<h3>$1</h3>')
+                        .replace(/\* \*(.*?)\* \*/g, '<strong>$1</strong>')
+                        .replace(/\n/g, '<br>');
+                    analysisResult.innerHTML = htmlResult;
+                } else {
+                    analysisResult.textContent = "Não foi possível obter uma análise. Tente novamente.";
+                }
+
+            } catch (error) {
+                console.error("Erro ao chamar a API Gemini:", error);
+                analysisResult.textContent = "Ocorreu um erro ao tentar analisar a carga. Verifique o console para mais detalhes.";
+            } finally {
+                // Esconde o spinner e mostra o resultado
+                analysisLoading.style.display = 'none';
+                analysisResult.style.display = 'block';
+            }
+        }
+
 
         // --- EVENT LISTENERS ---
         document.addEventListener('DOMContentLoaded', () => {
             populateProducts();
-            productSelect.focus(); // Foco inicial no seletor
+            productSelect.focus();
         });
 
         productSelect.addEventListener('change', updateCalculationDisplay);
         boxQuantityInput.addEventListener('input', updateCalculationDisplay);
         
-        // Listener para a tecla "Enter" no campo de quantidade
         boxQuantityInput.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
-                event.preventDefault(); // Impede o comportamento padrão do Enter
+                event.preventDefault();
                 processAndReset();
             }
         });
 
         clearHistoryBtn.addEventListener('click', clearHistory);
+        analyzeLoadBtn.addEventListener('click', analyzeLoadWithGemini);
 
     </script>
 
